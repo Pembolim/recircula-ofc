@@ -1,0 +1,1 @@
+As imagens enviadas pelos usuarios serao salvas nesta pasta.

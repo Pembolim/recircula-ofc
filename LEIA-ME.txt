@@ -1,0 +1,53 @@
+RECIRCULA - VERSAO COM SOLICITACOES, CHAT E FOTOS
+==================================================
+
+O QUE ESTA VERSAO FAZ
+- Cadastro, login e logout de usuarios.
+- Publicacao de objetos para doacao ou troca.
+- Upload opcional de fotos JPG, PNG e WEBP (ate 3 MB).
+- Catalogo com busca pelo titulo.
+- Solicitacao de um objeto por outro usuario.
+- O anunciante pode aceitar ou recusar a solicitacao.
+- Chat vinculado a cada solicitacao.
+- O anunciante pode marcar a negociacao como concluida.
+- Cada usuario pode consultar e excluir seus proprios anuncios.
+
+COMO INSTALAR
+1. Instale/abra o XAMPP.
+2. Extraia a pasta ReCircula_Completo para C:\xampp\htdocs\
+3. Abra o painel do XAMPP e inicie Apache e MySQL.
+4. Entre em http://localhost/phpmyadmin
+5. Importe o arquivo database.sql.
+6. Acesse http://localhost/ReCircula_Completo/
+
+BANCO DE DADOS
+O banco usado por esta versao se chama recircula_completo.
+Ele e separado do banco recircula_simples e do banco recircula.
+
+REQUISITOS
+- PHP 8 ou superior recomendado.
+- MySQL/MariaDB.
+- Extensao PDO MySQL.
+- Extensao fileinfo do PHP para validar as imagens.
+
+UPLOAD DE IMAGENS
+As imagens ficam em uploads/objetos.
+A aplicacao aceita JPG, PNG e WEBP, com limite de 3 MB.
+A pasta uploads/objetos precisa permitir que o Apache/PHP grave arquivos.
+Nao habilite execucao de scripts dentro da pasta de uploads em um servidor publico.
+
+OBSERVACOES SOBRE O CHAT
+O chat e atualizado quando a pagina e recarregada. Nao usa tempo real, WebSocket ou AJAX.
+Cada conversa pertence a uma solicitacao. Apenas o solicitante e o dono do anuncio podem acessa-la.
+A conversa fica disponivel enquanto a solicitacao estiver pendente ou aceita.
+
+FLUXO DE USO
+1. Uma pessoa cria uma conta e publica um objeto.
+2. Outra pessoa abre o anuncio e envia uma solicitacao.
+3. O dono do objeto aceita ou recusa.
+4. Se aceitar, os dois podem conversar pelo chat.
+5. O dono marca a solicitacao como concluida quando a entrega/troca terminar.
+
+IMPORTANTE
+Este e um projeto didatico. Antes de publicar na internet, seria necessario revisar
+permissoes, configuracao do servidor, protecao contra abuso, privacidade e seguranca.
