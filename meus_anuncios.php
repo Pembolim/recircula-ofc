@@ -6,24 +6,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     conferir_token();
     $id = (int)($_POST["id"] ?? 0);
 
-    $consulta = $pdo->prepare("SELECT imagem FROM objetos WHERE id = ? AND usuario_id = ?");
-    $consulta->execute([$id, $_SESSION["usuario_id"]]);
-    $objeto = $consulta->fetch(PDO::FETCH_ASSOC);
-
-    if ($objeto) {
-        $excluir = $pdo->prepare("DELETE FROM objetos WHERE id = ? AND usuario_id = ?");
-        $excluir->execute([$id, $_SESSION["usuario_id"]]);
-
-        if ($objeto["imagem"] && file_exists(__DIR__ . "/" . $objeto["imagem"])) {
-            unlink(__DIR__ . "/" . $objeto["imagem"]);
-        }
-    }
+    $excluir = $pdo->prepare("DELETE FROM objetos WHERE id = ? AND usuario_id = ?");
+    $excluir->execute([$id, $_SESSION["usuario_id"]]);
 
     header("Location: meus_anuncios.php");
     exit;
 }
 
-$consulta = $pdo->prepare("SELECT * FROM objetos WHERE usuario_id = ? ORDER BY criado_em DESC");
+$consulta = $pdo->prepare(
+    "SELECT id, titulo, status,
+            CASE WHEN imagem_bytes IS NOT NULL THEN 1 ELSE 0 END AS tem_imagem
+     FROM objetos
+     WHERE usuario_id = ?
+     ORDER BY criado_em DESC"
+);
 $consulta->execute([$_SESSION["usuario_id"]]);
 $objetos = $consulta->fetchAll(PDO::FETCH_ASSOC);
 
@@ -35,8 +31,8 @@ require "cabecalho.php";
     <div class="grade">
         <?php foreach ($objetos as $objeto): ?>
             <article class="card">
-                <?php if ($objeto["imagem"]): ?>
-                    <img class="foto-objeto" src="<?= limpar($objeto["imagem"]) ?>" alt="">
+                <?php if ((int)$objeto["tem_imagem"] === 1): ?>
+                    <img class="foto-objeto" src="imagem.php?id=<?= (int)$objeto["id"] ?>" alt="">
                 <?php else: ?>
                     <div class="sem-foto">Sem imagem</div>
                 <?php endif; ?>
