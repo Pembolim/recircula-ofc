@@ -1,53 +1,52 @@
-RECIRCULA - VERSAO COM SOLICITACOES, CHAT E FOTOS
-==================================================
+RECIRCULA - CONFIGURACAO DE PRODUCAO
+=====================================
 
-O QUE ESTA VERSAO FAZ
-- Cadastro, login e logout de usuarios.
+STACK
+- PHP 8.2 + Apache (Docker)
+- PostgreSQL no Supabase
+- Hospedagem PHP no Render
+- Fotos guardadas no campo bytea do PostgreSQL, para nao depender do disco temporario do servidor.
+
+FUNCIONALIDADES
+- Cadastro, login e logout.
 - Publicacao de objetos para doacao ou troca.
-- Upload opcional de fotos JPG, PNG e WEBP (ate 3 MB).
+- Upload de fotos JPG, PNG e WEBP (ate 3 MB).
 - Catalogo com busca pelo titulo.
-- Solicitacao de um objeto por outro usuario.
-- O anunciante pode aceitar ou recusar a solicitacao.
-- Chat vinculado a cada solicitacao.
-- O anunciante pode marcar a negociacao como concluida.
-- Cada usuario pode consultar e excluir seus proprios anuncios.
+- Solicitacoes, aceite/recusa e chat por solicitacao.
+- Conclusao de negociacoes.
+- Consulta e exclusao dos proprios anuncios.
 
-COMO INSTALAR
-1. Instale/abra o XAMPP.
-2. Extraia a pasta ReCircula_Completo para C:\xampp\htdocs\
-3. Abra o painel do XAMPP e inicie Apache e MySQL.
-4. Entre em http://localhost/phpmyadmin
-5. Importe o arquivo database.sql.
-6. Acesse http://localhost/ReCircula_Completo/
+SUPABASE
+1. O projeto Supabase precisa ter o esquema PostgreSQL de database.sql.
+2. No Dashboard do Supabase, abra Connect e escolha Session pooler.
+3. Copie o host indicado pelo Supabase. Nao tente montar o hostname manualmente.
+4. Em Database Settings, defina/reset a senha do banco se ainda nao houver uma senha conhecida.
+5. No Render, configure as variaveis descritas abaixo. Nunca coloque a senha no GitHub.
+
+RENDER - VARIAVEIS DE AMBIENTE
+SUPABASE_DB_HOST=<host copiado de Connect / Session pooler>
+SUPABASE_DB_PORT=5432
+SUPABASE_DB_NAME=postgres
+SUPABASE_DB_USER=postgres.<PROJECT_REF>
+SUPABASE_DB_PASSWORD=<senha do banco, cadastrada diretamente no Render>
+
+A senha deve ser guardada como variavel secreta no Render. Nao a envie pelo GitHub nem a coloque em config.php.
+
+DEPLOY
+- O servico Render usa o Dockerfile da raiz do repositorio.
+- O Render faz deploy automatico a partir da branch main.
+- URL atual do servico: https://recircula-ofc.onrender.com
+
+IMAGENS
+- As imagens sao armazenadas como bytea na tabela public.objetos.
+- imagem.php entrega a imagem para as paginas do site.
+- O diretório uploads antigo nao e mais usado pelo fluxo de upload.
 
 BANCO DE DADOS
-O banco usado por esta versao se chama recircula_completo.
-Ele e separado do banco recircula_simples e do banco recircula.
-
-REQUISITOS
-- PHP 8 ou superior recomendado.
-- MySQL/MariaDB.
-- Extensao PDO MySQL.
-- Extensao fileinfo do PHP para validar as imagens.
-
-UPLOAD DE IMAGENS
-As imagens ficam em uploads/objetos.
-A aplicacao aceita JPG, PNG e WEBP, com limite de 3 MB.
-A pasta uploads/objetos precisa permitir que o Apache/PHP grave arquivos.
-Nao habilite execucao de scripts dentro da pasta de uploads em um servidor publico.
-
-OBSERVACOES SOBRE O CHAT
-O chat e atualizado quando a pagina e recarregada. Nao usa tempo real, WebSocket ou AJAX.
-Cada conversa pertence a uma solicitacao. Apenas o solicitante e o dono do anuncio podem acessa-la.
-A conversa fica disponivel enquanto a solicitacao estiver pendente ou aceita.
-
-FLUXO DE USO
-1. Uma pessoa cria uma conta e publica um objeto.
-2. Outra pessoa abre o anuncio e envia uma solicitacao.
-3. O dono do objeto aceita ou recusa.
-4. Se aceitar, os dois podem conversar pelo chat.
-5. O dono marca a solicitacao como concluida quando a entrega/troca terminar.
+- database.sql contem o esquema PostgreSQL.
+- No Supabase, as tabelas sao: usuarios, objetos, solicitacoes e mensagens.
+- O esquema foi criado em um projeto Supabase na regiao sa-east-1.
 
 IMPORTANTE
-Este e um projeto didatico. Antes de publicar na internet, seria necessario revisar
-permissoes, configuracao do servidor, protecao contra abuso, privacidade e seguranca.
+Este e um projeto didatico. Antes de abrir ao publico, revise seguranca, privacidade,
+limites de upload, politicas de abuso, backup e controles de acesso.
