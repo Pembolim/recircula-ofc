@@ -3,8 +3,12 @@ require "config.php";
 $id = (int)($_GET["id"] ?? 0);
 
 $consulta = $pdo->prepare(
-    "SELECT objetos.*, usuarios.nome AS dono
-     FROM objetos JOIN usuarios ON objetos.usuario_id = usuarios.id
+    "SELECT objetos.id, objetos.usuario_id, objetos.titulo, objetos.descricao,
+            objetos.tipo, objetos.status, objetos.criado_em,
+            CASE WHEN objetos.imagem_bytes IS NOT NULL THEN 1 ELSE 0 END AS tem_imagem,
+            usuarios.nome AS dono
+     FROM objetos
+     JOIN usuarios ON objetos.usuario_id = usuarios.id
      WHERE objetos.id = ?"
 );
 $consulta->execute([$id]);
@@ -50,8 +54,8 @@ $titulo_pagina = $objeto["titulo"];
 require "cabecalho.php";
 ?>
 <section class="detalhe">
-    <?php if ($objeto["imagem"]): ?>
-        <img class="foto-detalhe" src="<?= limpar($objeto["imagem"]) ?>" alt="Foto do objeto">
+    <?php if ((int)$objeto["tem_imagem"] === 1): ?>
+        <img class="foto-detalhe" src="imagem.php?id=<?= (int)$objeto["id"] ?>" alt="Foto do objeto">
     <?php endif; ?>
     <div>
         <span class="etiqueta"><?= $objeto["tipo"] === "doacao" ? "DOAÇÃO" : "TROCA" ?></span>
