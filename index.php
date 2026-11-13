@@ -3,14 +3,23 @@ require "config.php";
 
 $busca = trim($_GET["busca"] ?? "");
 
-$sql = "SELECT objetos.*, usuarios.nome AS dono
+$sql = "SELECT
+            objetos.id,
+            objetos.usuario_id,
+            objetos.titulo,
+            objetos.descricao,
+            objetos.tipo,
+            objetos.status,
+            objetos.criado_em,
+            CASE WHEN objetos.imagem_bytes IS NOT NULL THEN 1 ELSE 0 END AS tem_imagem,
+            usuarios.nome AS dono
         FROM objetos
         JOIN usuarios ON objetos.usuario_id = usuarios.id
         WHERE objetos.status = 'disponivel'";
 $parametros = [];
 
 if ($busca !== "") {
-    $sql .= " AND objetos.titulo LIKE ?";
+    $sql .= " AND objetos.titulo ILIKE ?";
     $parametros[] = "%$busca%";
 }
 
@@ -42,8 +51,8 @@ require "cabecalho.php";
     <div class="grade">
         <?php foreach ($objetos as $objeto): ?>
             <article class="card">
-                <?php if ($objeto["imagem"]): ?>
-                    <img class="foto-objeto" src="<?= limpar($objeto["imagem"]) ?>"
+                <?php if ((int)$objeto["tem_imagem"] === 1): ?>
+                    <img class="foto-objeto" src="imagem.php?id=<?= (int)$objeto["id"] ?>"
                          alt="Foto de <?= limpar($objeto["titulo"]) ?>">
                 <?php else: ?>
                     <div class="sem-foto">Sem imagem</div>
