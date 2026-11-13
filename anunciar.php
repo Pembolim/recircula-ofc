@@ -3,8 +3,10 @@ require "config.php";
 exigir_login();
 
 $erro = "";
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     conferir_token();
+
     $titulo = trim($_POST["titulo"] ?? "");
     $descricao = trim($_POST["descricao"] ?? "");
     $tipo = $_POST["tipo"] ?? "";
@@ -12,7 +14,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if ($titulo === "" || $descricao === "" || !in_array($tipo, ["doacao", "troca"], true)) {
         $erro = "Preencha todos os campos corretamente.";
     } else {
-        $caminho_imagem = null;
+        $dados_imagem = null;
+        $mime_imagem = null;
 
         if (isset($_FILES["imagem"]) && $_FILES["imagem"]["error"] !== UPLOAD_ERR_NO_FILE) {
             if ($_FILES["imagem"]["error"] !== UPLOAD_ERR_OK) {
@@ -22,21 +25,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             } else {
                 $finfo = new finfo(FILEINFO_MIME_TYPE);
                 $mime = $finfo->file($_FILES["imagem"]["tmp_name"]);
-                $tipos_permitidos = [
-                    "image/jpeg" => "jpg",
-                    "image/png" => "png",
-                    "image/webp" => "webp"
-                ];
+                $tipos_permitidos = ["image/jpeg", "image/png", "image/webp"];
 
-                if (!isset($tipos_permitidos[$mime])) {
+                if (!in_array($mime, $tipos_permitidos, true)) {
                     $erro = "Envie uma imagem JPG, PNG ou WEBP.";
                 } else {
-                    $nome_arquivo = bin2hex(random_bytes(16)) . "." . $tipos_permitidos[$mime];
-                    $pasta = __DIR__ . "/uploads/objetos/";
-                    if (move_uploaded_file($_FILES["imagem"]["tmp_name"], $pasta . $nome_arquivo)) {
-                        $caminho_imagem = "uploads/objetos/" . $nome_arquivo;
+                    $conteudo = file_get_contents($_FILES["imagem"]["tmp_name"]);
+
+                    if ($conteudo === false) {
+                        $erro = "Não foi possível ler a imagem enviada.";
                     } else {
-                        $erro = "Erro ao salvar a imagem.";
+                        $dados_imagem = $conteudo;
+                        $mime_imagem = $mime;
                     }
                 }
             }
@@ -44,12 +44,26 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         if ($erro === "") {
             $inserir = $pdo->prepare(
-                "INSERT INTO objetos (usuario_id, titulo, descricao, tipo, imagem)
-                 VALUES (?, ?, ?, ?, ?)"
+                "INSERT INTO objetos
+                    (usuario_id, titulo, descricao, tipo, imagem_bytes, imagem_mime)
+                 VALUES (?, ?, ?, ?, ?, ?)"
             );
-            $inserir->execute([
-                $_SESSION["usuario_id"], $titulo, $descricao, $tipo, $caminho_imagem
-            ]);
+            $inserir->bindValue(1, (int)$_SESSION["usuario_id"], PDO::PARAM_INT);
+            $inserir->bindValue(2, $titulo, PDO::PARAM_STR);
+            $inserir->bindValue(3, $descricao, PDO::PARAM_STR);
+            $inserir->bindValue(4, $tipo, PDO::PARAM_STR);
+            $inserir->bindValue(
+                5,
+                $dados_imagem,
+                $dados_imagem === null ? PDO::PARAM_NULL : PDO::PARAM_LOB
+            );
+            $inserir->bindValue(
+                6,
+                $mime_imagem,
+                $mime_imagem === null ? PDO::PARAM_NULL : PDO::PARAM_STR
+            );
+            $inserir->execute();
+
             header("Location: meus_anuncios.php");
             exit;
         }
